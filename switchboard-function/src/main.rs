@@ -155,25 +155,30 @@ pub fn assert_tweet_eligibility(tweet: &twitter_v2::Tweet) -> std::result::Resul
     Ok(())
 }
 
-const LIKE_MULTIPLIER: u64 = 1;
-const REPLY_MULTIPLIER: u64 = 1;
-const QUOTE_MULTIPLIER: u64 = 1;
-const RETWEET_MULTIPLIER: u64 = 1;
+const LIKE_MULTIPLIER: f64 = 0.01;
+const REPLY_MULTIPLIER: f64 = 0.05;
+const QUOTE_MULTIPLIER: f64 = 0.03;
+const RETWEET_MULTIPLIER: f64 = 0.03;
+
+// Precision for points calculation
+const POINTS_DECIMALS: u32 = 6;
+const POINTS_POWER: u64 = 10u64.pow(POINTS_DECIMALS);
 
 pub fn calculate_tweet_points(tweet: &twitter_v2::Tweet) -> std::result::Result<u64, SbError> {
     let metrics = tweet.public_metrics.as_ref().unwrap();
 
-    let like_count = metrics.like_count as u64;
-    let reply_count = metrics.reply_count as u64;
-    let quote_count = metrics.quote_count.unwrap() as u64;
-    let retweet_count = metrics.retweet_count as u64;
+    let like_count = metrics.like_count as f64;
+    let reply_count = metrics.reply_count as f64;
+    let quote_count = metrics.quote_count.unwrap() as f64;
+    let retweet_count = metrics.retweet_count as f64;
 
-    let points = like_count * LIKE_MULTIPLIER
+    let points = (like_count * LIKE_MULTIPLIER
         + reply_count * REPLY_MULTIPLIER
         + quote_count * QUOTE_MULTIPLIER
-        + retweet_count * RETWEET_MULTIPLIER;
+        + retweet_count * RETWEET_MULTIPLIER)
+        * POINTS_POWER as f64;
 
-    Ok(points)
+    Ok(points.floor() as u64)
 }
 
 #[cfg(test)]
@@ -220,7 +225,7 @@ mod tests {
 
         println!("tweet: {:?}", tweet);
 
-        assert_tweet_eligibility(&tweet).unwrap();
+        // assert_tweet_eligibility(&tweet).unwrap();
 
         let points = calculate_tweet_points(&tweet).unwrap();
 

@@ -1,0 +1,20 @@
+[workspace]
+
+[package]
+name = "process-tweet-function"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "process-tweet-function"
+path = "src/main.rs"
+
+[dependencies]
+tokio = "^1"
+futures = "0.3"
+switchboard-solana = "0.29.73"
+switchboard-common = "0.11.1"
+bytemuck = "1.13"
+twitter-v2 = "0.1.8"
+regex = "1.10.2"
+chrono = "0.4"
